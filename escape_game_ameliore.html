@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 Escape Game - Mystère au Laboratoire de Chimie</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .title-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes success-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .glow-animation {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .success-pop {
+            animation: success-pop 0.5s ease-in-out;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+        }
+        
+        .neon-border {
+            border: 2px solid transparent;
+            background: linear-gradient(145deg, rgba(30,30,50,0.9), rgba(20,20,40,0.9)) padding-box,
+                        linear-gradient(145deg, #8b5cf6, #06b6d4) border-box;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #8b5cf6, #06b6d4, #10b981);
+            background-size: 200% 100%;
+            animation: gradient-shift 3s ease infinite;
+        }
+        
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .suspect-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        
+        .hint-btn:hover {
+            transform: rotate(-5deg) scale(1.05);
+        }
+        
+        .molecule {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 2rem;
+            pointer-events: none;
+        }
+        
+        input[type="text"], input[type="number"], select {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+            outline: none;
+        }
+        
+        .timer-critical {
+            animation: shake 0.5s ease-in-out infinite;
+            color: #ef4444 !important;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8b5cf6, #06b6d4);
+            border-radius: 4px;
+        }
+
+        /* Accessibility improvements */
+        .focus-visible:focus {
+            outline: 3px solid #06b6d4;
+            outline-offset: 2px;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #8b5cf6;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .card-gradient {
+                background: rgba(255,255,255,0.2);
+                border: 2px solid white;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            .float-animation,
+            .glow-animation,
+            .shake,
+            .success-pop {
+                animation: none;
+            }
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .difficulty-easy {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+        }
+
+        .difficulty-medium {
+            background: rgba(234, 179, 8, 0.2);
+            border: 1px solid rgba(234, 179, 8, 0.5);
+            color: #facc15;
+        }
+
+        .difficulty-hard {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #f87171;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white overflow-x-hidden">
+    <!-- Skip to main content (accessibility) -->
+    <a href="#main-content" class="skip-link focus-visible">Aller au contenu principal</a>
+
+    <!-- Floating molecules background -->
+    <div id="molecules" class="fixed inset-0 pointer-events-none z-0" aria-hidden="true"></div>
+
+    <!-- Main Container -->
+    <div class="relative z-10" id="main-content">
+        <!-- Header -->
+        <header class="py-6 px-4 border-b border-purple-500/30">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <h1 class="title-font text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                        🔬 ESCAPE GAME
+                    </h1>
+                    <p class="text-purple-300 text-sm md:text-base">Mystère au Laboratoire de Chimie</p>
+                </div>
+                
+                <!-- Timer & Progress -->
+                <div class="flex items-center gap-6">
+                    <div class="text-center">
+                        <div id="timer" class="title-font text-2xl md:text-3xl font-bold text-cyan-400" role="timer" aria-live="polite">60:00</div>
+                        <p class="text-xs text-gray-400">Temps restant</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="flex gap-1" id="progress-dots" role="progressbar" aria-label="Progression des énigmes">
+                            <span class="w-4 h-4 rounded-full bg-gray-600" data-enigme="1" aria-label="Énigme 1"></span>
+                            <span class="w-4 h-4 rounded-full bg-gray-600" data-enigme="2" aria-label="Énigme 2"></span>
+                            <span class="w-4 h-4 rounded-full bg-gray-600" data-enigme="3" aria-label="Énigme 3"></span>
+                            <span class="w-4 h-4 rounded-full bg-gray-600" data-enigme="4" aria-label="Énigme 4"></span>
+                            <span class="w-4 h-4 rounded-full bg-gray-600" data-enigme="5" aria-label="Énigme 5"></span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Énigmes résolues</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-6xl mx-auto px-4 py-8">
+            
+            <!-- Start Screen -->
+            <section id="start-screen" class="text-center py-12">
+                <div class="float-animation mb-8">
+                    <span class="text-8xl" aria-hidden="true">🧪</span>
+                </div>
+                
+                <h2 class="title-font text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    MYSTÈRE AU LABORATOIRE
+                </h2>
+                
+                <p class="text-lg text-gray-300 mb-4">Oxydoréduction et Bilan de Matière • Niveau Première</p>
+                
+                <!-- Difficulty Selection -->
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Choisissez votre niveau de difficulté :</h3>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <button onclick="setDifficulty('facile')" class="difficulty-btn px-6 py-3 bg-emerald-600/30 hover:bg-emerald-600/50 border-2 border-emerald-500/50 rounded-xl transition-all focus-visible">
+                            <span class="difficulty-badge difficulty-easy">FACILE</span>
+                            <p class="text-sm mt-2">Plus d'indices, plus de temps</p>
+                        </button>
+                        <button onclick="setDifficulty('normal')" class="difficulty-btn px-6 py-3 bg-yellow-600/30 hover:bg-yellow-600/50 border-2 border-yellow-500/50 rounded-xl transition-all focus-visible">
+                            <span class="difficulty-badge difficulty-medium">NORMAL</span>
+                            <p class="text-sm mt-2">Équilibré et recommandé</p>
+                        </button>
+                        <button onclick="setDifficulty('difficile')" class="difficulty-btn px-6 py-3 bg-red-600/30 hover:bg-red-600/50 border-2 border-red-500/50 rounded-xl transition-all focus-visible">
+                            <span class="difficulty-badge difficulty-hard">DIFFICILE</span>
+                            <p class="text-sm mt-2">Moins d'indices, moins de temps</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Team Name Input -->
+                <div class="mb-6 max-w-md mx-auto">
+                    <label for="team-name" class="block text-lg font-bold text-white mb-2">Nom de votre équipe :</label>
+                    <input type="text" id="team-name" class="w-full px-4 py-3 rounded-xl text-center text-white text-xl font-bold" placeholder="Les Chimistes" maxlength="30" aria-label="Nom de l'équipe">
+                    <p class="text-xs text-gray-400 mt-2">Ce nom sera utilisé pour sauvegarder votre progression</p>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <span class="px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/50 text-purple-300">
+                        ⏱️ <span id="duration-display">45-60 minutes</span>
+                    </span>
+                    <span class="px-4 py-2 rounded-full bg-cyan-500/20 border border-cyan-500/50 text-cyan-300">
+                        👥 Équipes de 3-4
+                    </span>
+                    <span class="px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-300">
+                        🎯 5 énigmes
+                    </span>
+                </div>
+                
+                <!-- Scenario Box -->
+                <div class="neon-border rounded-2xl p-6 md:p-8 max-w-3xl mx-auto mb-8 text-left">
+                    <h3 class="text-xl font-bold text-cyan-400 mb-4">📖 LE SCÉNARIO</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        Ce matin, en arrivant au lycée, vous découvrez que le précieux <span class="text-amber-400 font-semibold">échantillon de cuivre pur</span> du laboratoire a disparu ! Le Professeur Réductor, votre enseignant de chimie, est catastrophé : cet échantillon devait servir à la démonstration de demain devant l'inspecteur.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        Heureusement, le voleur a laissé des traces de <span class="text-emerald-400 font-semibold">réactions chimiques</span> sur son passage. En utilisant vos connaissances en oxydoréduction et en bilan de matière, vous devez reconstituer le parcours du voleur, retrouver l'échantillon et identifier le coupable.
+                    </p>
+                    <p class="text-purple-400 font-semibold italic">
+                        ⚠️ Vous avez 1 heure avant l'arrivée du gardien. À vous de jouer !
+                    </p>
+                </div>
+                
+                <!-- Suspects avec images -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-white mb-6">🔍 Les Suspects</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                        <div class="suspect-card card-gradient rounded-xl p-4 transition-all duration-300 cursor-pointer border border-pink-500/30" tabindex="0">
+                            <img src="https://www.genspark.ai/api/files/s/xmWFWM9P" alt="Portrait de Madame Oxydine" class="w-full h-32 object-cover rounded-lg mb-2">
+                            <h4 class="font-bold text-pink-400">Mme Oxydine</h4>
+                            <p class="text-xs text-gray-400">La laborantine</p>
+                        </div>
+                        <div class="suspect-card card-gradient rounded-xl p-4 transition-all duration-300 cursor-pointer border border-yellow-500/30" tabindex="0">
+                            <img src="https://www.genspark.ai/api/files/s/5E4cONw1" alt="Portrait de Monsieur Électron" class="w-full h-32 object-cover rounded-lg mb-2">
+                            <h4 class="font-bold text-yellow-400">M. Électron</h4>
+                            <p class="text-xs text-gray-400">Le technicien</p>
+                        </div>
+                        <div class="suspect-card card-gradient rounded-xl p-4 transition-all duration-300 cursor-pointer border border-cyan-500/30" tabindex="0">
+                            <img src="https://www.genspark.ai/api/files/s/55ouKCd9" alt="Portrait de Jules Limitant" class="w-full h-32 object-cover rounded-lg mb-2">
+                            <h4 class="font-bold text-cyan-400">Jules Limitant</h4>
+                            <p class="text-xs text-gray-400">Élève de Terminale</p>
+                        </div>
+                        <div class="suspect-card card-gradient rounded-xl p-4 transition-all duration-300 cursor-pointer border border-emerald-500/30" tabindex="0">
+                            <img src="https://www.genspark.ai/api/files/s/75ejuBgt" alt="Portrait de Professeur Stœchio" class="w-full h-32 object-cover rounded-lg mb-2">
+                            <h4 class="font-bold text-emerald-400">Prof. Stœchio</h4>
+                            <p class="text-xs text-gray-400">Enseignant remplaçant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load Game Button -->
+                <div id="load-game-section" class="mb-6 hidden">
+                    <button onclick="loadGame()" class="px-8 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-full text-lg font-bold hover:from-cyan-500 hover:to-purple-500 transition-all transform hover:scale-105 focus-visible">
+                        💾 REPRENDRE LA PARTIE SAUVEGARDÉE
+                    </button>
+                </div>
+                
+                <button onclick="startGame()" class="glow-animation px-10 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full text-xl font-bold hover:from-purple-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 focus-visible">
+                    🚀 COMMENCER L'ENQUÊTE
+                </button>
+            </section>
+
+            <!-- Game Sections (same as before but with aria attributes and keyboard navigation) -->
+            
+            <!-- ENIGME 1 -->
+            <section id="enigme-1" class="hidden" role="region" aria-labelledby="enigme-1-title">
+                <div class="neon-border rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-4 py-2 bg-purple-600 rounded-lg font-bold">ÉNIGME 1/5</span>
+                        <span id="enigme-1-title" class="text-purple-300">La trace sur la porte</span>
+                    </div>
+                    
+                    <div class="bg-black/30 rounded-xl p-4 mb-6">
+                        <p class="text-sm text-gray-400 mb-2">📚 Notion mobilisée</p>
+                        <p class="text-cyan-400 font-semibold">Oxydant, réducteur et transfert d'électrons</p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">📋 Contexte</h3>
+                        <p class="text-gray-300">
+                            Sur la poignée de la porte du laboratoire, vous découvrez une <span class="text-emerald-400 font-semibold">trace verdâtre</span>. Le Professeur Réductor vous explique que c'est du vert-de-gris, formé par l'oxydation du cuivre au contact de l'air. Quelqu'un a manipulé du cuivre récemment !
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 rounded-xl p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">❓ L'énigme</h3>
+                        <p class="text-gray-300 mb-4">Vous trouvez un message codé près de la trace. Pour le décoder, répondez aux questions :</p>
+                        
+                        <div class="space-y-6">
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-cyan-300 mb-3"><strong>Question A :</strong> L'ion Fe³⁺ capte un électron pour devenir Fe²⁺. L'ion Fe³⁺ est-il un oxydant ou un réducteur ?</p>
+                                <div class="flex gap-4" role="group" aria-label="Réponses pour la question A">
+                                    <button onclick="selectAnswer(1, 'A', 'O', this)" class="answer-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">OXYDANT</button>
+                                    <button onclick="selectAnswer(1, 'A', 'R', this)" class="answer-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">RÉDUCTEUR</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-cyan-300 mb-3"><strong>Question B :</strong> Le cuivre Cu perd 2 électrons pour devenir Cu²⁺. Le cuivre subit-il une oxydation ou une réduction ?</p>
+                                <div class="flex gap-4" role="group" aria-label="Réponses pour la question B">
+                                    <button onclick="selectAnswer(1, 'B', 'O', this)" class="answer-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">OXYDATION</button>
+                                    <button onclick="selectAnswer(1, 'B', 'R', this)" class="answer-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">RÉDUCTION</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-cyan-300 mb-3"><strong>Question C :</strong> Associez le bon couple redox :</p>
+                                <div class="flex gap-4" role="group" aria-label="Réponses pour la question C">
+                                    <button onclick="selectAnswer(1, 'C', 'C', this)" class="answer-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">Cu²⁺/Cu</button>
+                                    <button onclick="selectAnswer(1, 'C', 'X', this)" class="answer-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">Cu/Cu²⁺</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-amber-900/30 rounded-lg border border-amber-500/50">
+                            <p class="text-amber-400">🔑 <strong>Code = Première lettre de chaque réponse</strong></p>
+                            <div class="flex gap-2 mt-2" aria-live="polite" aria-label="Code actuel">
+                                <span id="code1-A" class="w-12 h-12 flex items-center justify-center bg-black/50 rounded-lg text-2xl font-bold">?</span>
+                                <span class="text-2xl" aria-hidden="true">-</span>
+                                <span id="code1-B" class="w-12 h-12 flex items-center justify-center bg-black/50 rounded-lg text-2xl font-bold">?</span>
+                                <span class="text-2xl" aria-hidden="true">-</span>
+                                <span id="code1-C" class="w-12 h-12 flex items-center justify-center bg-black/50 rounded-lg text-2xl font-bold">?</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hints -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-3">💡 Indices disponibles (<span id="hints-remaining-1">3</span> restants)</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="showHint(1, 1)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 1
+                            </button>
+                            <button onclick="showHint(1, 2)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 2
+                            </button>
+                            <button onclick="showHint(1, 3)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 3
+                            </button>
+                        </div>
+                        <div id="hint-display-1" class="mt-3 p-4 bg-yellow-900/30 rounded-lg border border-yellow-500/30 hidden" role="alert">
+                            <p id="hint-text-1" class="text-yellow-300"></p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="validateEnigme1()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl font-bold text-lg hover:from-emerald-500 hover:to-cyan-500 transition-all transform hover:scale-[1.02] focus-visible">
+                        ✓ VALIDER LE CODE
+                    </button>
+                    
+                    <div id="result-1" class="mt-4 hidden" role="alert" aria-live="assertive"></div>
+                </div>
+            </section>
+
+            <!-- ENIGME 2 -->
+            <section id="enigme-2" class="hidden" role="region" aria-labelledby="enigme-2-title">
+                <div class="neon-border rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-4 py-2 bg-cyan-600 rounded-lg font-bold">ÉNIGME 2/5</span>
+                        <span id="enigme-2-title" class="text-cyan-300">Le coffre du laboratoire</span>
+                    </div>
+                    
+                    <div class="bg-black/30 rounded-xl p-4 mb-6">
+                        <p class="text-sm text-gray-400 mb-2">📚 Notion mobilisée</p>
+                        <p class="text-cyan-400 font-semibold">Demi-équations électroniques et couples redox</p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">📋 Contexte</h3>
+                        <p class="text-gray-300">
+                            Dans la salle 312, vous trouvez un <span class="text-emerald-400 font-semibold">coffre avec un cadenas à 4 chiffres</span>. Sur le coffre, une étiquette indique des couples redox et des demi-équations partielles.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 rounded-xl p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">❓ L'énigme</h3>
+                        <p class="text-gray-300 mb-4">Complétez les demi-équations et trouvez les coefficients manquants :</p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full mb-6">
+                                <thead>
+                                    <tr class="border-b border-purple-500/50">
+                                        <th class="py-3 px-4 text-left text-purple-300">Couple redox</th>
+                                        <th class="py-3 px-4 text-left text-purple-300">Demi-équation à compléter</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-300">
+                                    <tr class="border-b border-gray-700">
+                                        <td class="py-3 px-4 font-mono text-cyan-400">Ag⁺/Ag</td>
+                                        <td class="py-3 px-4">
+                                            <label for="coef1" class="sr-only">Coefficient pour Ag⁺</label>
+                                            <span class="font-mono">Ag⁺ + </span>
+                                            <input type="number" id="coef1" class="w-16 px-2 py-1 rounded text-center text-white focus-visible" min="1" max="9" aria-label="Nombre d'électrons pour Ag+">
+                                            <span class="font-mono"> e⁻ ⇌ Ag</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-700">
+                                        <td class="py-3 px-4 font-mono text-cyan-400">Cu²⁺/Cu</td>
+                                        <td class="py-3 px-4">
+                                            <label for="coef2" class="sr-only">Coefficient pour Cu²⁺</label>
+                                            <span class="font-mono">Cu²⁺ + </span>
+                                            <input type="number" id="coef2" class="w-16 px-2 py-1 rounded text-center text-white focus-visible" min="1" max="9" aria-label="Nombre d'électrons pour Cu2+">
+                                            <span class="font-mono"> e⁻ ⇌ Cu</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-700">
+                                        <td class="py-3 px-4 font-mono text-cyan-400">Fe³⁺/Fe²⁺</td>
+                                        <td class="py-3 px-4">
+                                            <label for="coef3" class="sr-only">Coefficient pour Fe³⁺</label>
+                                            <span class="font-mono">Fe³⁺ + </span>
+                                            <input type="number" id="coef3" class="w-16 px-2 py-1 rounded text-center text-white focus-visible" min="1" max="9" aria-label="Nombre d'électrons pour Fe3+">
+                                            <span class="font-mono"> e⁻ ⇌ Fe²⁺</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 font-mono text-cyan-400">Al³⁺/Al</td>
+                                        <td class="py-3 px-4">
+                                            <label for="coef4" class="sr-only">Coefficient pour Al³⁺</label>
+                                            <span class="font-mono">Al³⁺ + </span>
+                                            <input type="number" id="coef4" class="w-16 px-2 py-1 rounded text-center text-white focus-visible" min="1" max="9" aria-label="Nombre d'électrons pour Al3+">
+                                            <span class="font-mono"> e⁻ ⇌ Al</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="p-4 bg-amber-900/30 rounded-lg border border-amber-500/50">
+                            <p class="text-amber-400">🔐 <strong>Le code du cadenas = ?₁ ?₂ ?₃ ?₄</strong></p>
+                            <div class="flex gap-2 mt-3 justify-center" aria-live="polite" aria-label="Code du cadenas actuel">
+                                <span id="lock-1" class="w-14 h-14 flex items-center justify-center bg-gradient-to-b from-gray-700 to-gray-900 rounded-lg text-2xl font-bold border-2 border-gray-600">?</span>
+                                <span id="lock-2" class="w-14 h-14 flex items-center justify-center bg-gradient-to-b from-gray-700 to-gray-900 rounded-lg text-2xl font-bold border-2 border-gray-600">?</span>
+                                <span id="lock-3" class="w-14 h-14 flex items-center justify-center bg-gradient-to-b from-gray-700 to-gray-900 rounded-lg text-2xl font-bold border-2 border-gray-600">?</span>
+                                <span id="lock-4" class="w-14 h-14 flex items-center justify-center bg-gradient-to-b from-gray-700 to-gray-900 rounded-lg text-2xl font-bold border-2 border-gray-600">?</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hint -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-3">💡 Indice disponible (<span id="hints-remaining-2">1</span> restant)</h4>
+                        <button onclick="showHint(2, 1)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                            Révéler l'indice
+                        </button>
+                        <div id="hint-display-2" class="mt-3 p-4 bg-yellow-900/30 rounded-lg border border-yellow-500/30 hidden" role="alert">
+                            <p id="hint-text-2" class="text-yellow-300"></p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="validateEnigme2()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl font-bold text-lg hover:from-emerald-500 hover:to-cyan-500 transition-all transform hover:scale-[1.02] focus-visible">
+                        🔓 OUVRIR LE CADENAS
+                    </button>
+                    
+                    <div id="result-2" class="mt-4 hidden" role="alert" aria-live="assertive"></div>
+                </div>
+            </section>
+
+            <!-- ENIGME 3 -->
+            <section id="enigme-3" class="hidden" role="region" aria-labelledby="enigme-3-title">
+                <div class="neon-border rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-4 py-2 bg-emerald-600 rounded-lg font-bold">ÉNIGME 3/5</span>
+                        <span id="enigme-3-title" class="text-emerald-300">Le message dans le coffre</span>
+                    </div>
+                    
+                    <div class="bg-black/30 rounded-xl p-4 mb-6">
+                        <p class="text-sm text-gray-400 mb-2">📚 Notion mobilisée</p>
+                        <p class="text-cyan-400 font-semibold">Équation d'oxydoréduction complète</p>
+                    </div>
+
+                    <!-- Schéma éducatif -->
+                    <div class="mb-6">
+                        <img src="https://www.genspark.ai/api/files/s/YiwLZFvB" alt="Schéma de la réaction redox entre ions argent et cuivre" class="w-full rounded-xl border-2 border-purple-500/30">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">📋 Contexte</h3>
+                        <p class="text-gray-300">
+                            Dans le coffre, vous trouvez une feuille avec une <span class="text-emerald-400 font-semibold">équation d'oxydoréduction incomplète</span> et un message codé. Le voleur a laissé cette trace en faisant une manipulation !
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 rounded-xl p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">❓ L'énigme</h3>
+                        <p class="text-gray-300 mb-2">Le voleur a plongé une lame d'argent dans une solution d'ions cuivre Cu²⁺.</p>
+                        <p class="text-cyan-400 mb-4 font-mono">Les couples redox sont : Ag⁺/Ag et Cu²⁺/Cu</p>
+                        
+                        <div class="bg-black/30 rounded-lg p-4 mb-4">
+                            <p class="text-purple-300 mb-2"><strong>Étape 1 :</strong> Écrivez les deux demi-équations électroniques.</p>
+                            <p class="text-purple-300 mb-2"><strong>Étape 2 :</strong> Équilibrez le nombre d'électrons (coefficient multiplicateur ?).</p>
+                            <p class="text-purple-300"><strong>Étape 3 :</strong> Écrivez l'équation bilan complète.</p>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div class="bg-black/40 rounded-lg p-4">
+                                <p class="text-sm text-gray-400 mb-2">Demi-équation de réduction :</p>
+                                <p class="font-mono text-cyan-300">Ag⁺ + e⁻ → Ag</p>
+                            </div>
+                            <div class="bg-black/40 rounded-lg p-4">
+                                <p class="text-sm text-gray-400 mb-2">Demi-équation d'oxydation :</p>
+                                <p class="font-mono text-cyan-300">Cu → Cu²⁺ + 2e⁻</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-amber-900/30 rounded-lg border border-amber-500/50">
+                            <p class="text-amber-400 mb-3">🔑 <strong>Le code = coefficient devant Ag⁺ dans l'équation bilan</strong></p>
+                            <div class="flex items-center gap-4">
+                                <label for="coef-ag" class="text-gray-300">Coefficient devant Ag⁺ :</label>
+                                <input type="number" id="coef-ag" class="w-20 px-3 py-2 rounded text-center text-white text-xl font-bold focus-visible" min="1" max="9" aria-label="Coefficient devant Ag+">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hints -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-3">💡 Indices disponibles (<span id="hints-remaining-3">3</span> restants)</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="showHint(3, 1)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 1
+                            </button>
+                            <button onclick="showHint(3, 2)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 2
+                            </button>
+                            <button onclick="showHint(3, 3)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 3
+                            </button>
+                        </div>
+                        <div id="hint-display-3" class="mt-3 p-4 bg-yellow-900/30 rounded-lg border border-yellow-500/30 hidden" role="alert">
+                            <p id="hint-text-3" class="text-yellow-300"></p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="validateEnigme3()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl font-bold text-lg hover:from-emerald-500 hover:to-cyan-500 transition-all transform hover:scale-[1.02] focus-visible">
+                        ✓ VALIDER LE COEFFICIENT
+                    </button>
+                    
+                    <div id="result-3" class="mt-4 hidden" role="alert" aria-live="assertive"></div>
+                </div>
+            </section>
+
+            <!-- ENIGME 4 -->
+            <section id="enigme-4" class="hidden" role="region" aria-labelledby="enigme-4-title">
+                <div class="neon-border rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-4 py-2 bg-pink-600 rounded-lg font-bold">ÉNIGME 4/5</span>
+                        <span id="enigme-4-title" class="text-pink-300">Le tableau mystérieux</span>
+                    </div>
+                    
+                    <div class="bg-black/30 rounded-xl p-4 mb-6">
+                        <p class="text-sm text-gray-400 mb-2">📚 Notion mobilisée</p>
+                        <p class="text-cyan-400 font-semibold">Tableau d'avancement et évolution du système</p>
+                    </div>
+
+                    <!-- Schéma éducatif -->
+                    <div class="mb-6">
+                        <img src="https://www.genspark.ai/api/files/s/I5njC8IZ" alt="Schéma du tableau d'avancement de réaction" class="w-full rounded-xl border-2 border-purple-500/30">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">📋 Contexte</h3>
+                        <p class="text-gray-300">
+                            Dans la salle 2, vous trouvez un tableau blanc avec un <span class="text-emerald-400 font-semibold">tableau d'avancement partiellement effacé</span>. C'est la trace d'une expérience que le voleur a réalisée !
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 rounded-xl p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">❓ L'énigme</h3>
+                        
+                        <div class="bg-black/40 rounded-lg p-4 mb-4">
+                            <p class="text-cyan-400 font-mono text-lg text-center mb-4">2Ag⁺ + Cu → 2Ag + Cu²⁺</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-300">
+                                <span>n(Ag⁺)ᵢ = 0,1 mol</span>
+                                <span>n(Cu)ᵢ = 0,08 mol</span>
+                                <span>n(Ag)ᵢ = 0 mol</span>
+                                <span>n(Cu²⁺)ᵢ = 0 mol</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-300 mb-4">Complétez le tableau d'avancement en fonction de x :</p>
+                        
+                        <div class="overflow-x-auto mb-4">
+                            <table class="w-full text-center">
+                                <thead>
+                                    <tr class="border-b border-purple-500/50">
+                                        <th class="py-2 px-3 text-purple-300">État</th>
+                                        <th class="py-2 px-3 text-purple-300">2Ag⁺</th>
+                                        <th class="py-2 px-3 text-purple-300">Cu</th>
+                                        <th class="py-2 px-3 text-purple-300">2Ag</th>
+                                        <th class="py-2 px-3 text-purple-300">Cu²⁺</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-300">
+                                    <tr class="border-b border-gray-700">
+                                        <td class="py-2 px-3">EI</td>
+                                        <td class="py-2 px-3">0,1</td>
+                                        <td class="py-2 px-3">0,08</td>
+                                        <td class="py-2 px-3">0</td>
+                                        <td class="py-2 px-3">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3">x</td>
+                                        <td class="py-2 px-3">
+                                            <label for="expr-A" class="sr-only">Expression pour Ag+</label>
+                                            <select id="expr-A" class="bg-black/50 border border-purple-500/50 rounded px-2 py-1 text-cyan-300 focus-visible" aria-label="Choisir l'expression pour Ag+">
+                                                <option value="">?</option>
+                                                <option value="0.1-x">0,1 - x</option>
+                                                <option value="0.1-2x">0,1 - 2x</option>
+                                                <option value="x">x</option>
+                                                <option value="2x">2x</option>
+                                            </select>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <label for="expr-B" class="sr-only">Expression pour Cu</label>
+                                            <select id="expr-B" class="bg-black/50 border border-purple-500/50 rounded px-2 py-1 text-cyan-300 focus-visible" aria-label="Choisir l'expression pour Cu">
+                                                <option value="">?</option>
+                                                <option value="0.08-x">0,08 - x</option>
+                                                <option value="0.08-2x">0,08 - 2x</option>
+                                                <option value="x">x</option>
+                                                <option value="2x">2x</option>
+                                            </select>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <label for="expr-C" class="sr-only">Expression pour Ag</label>
+                                            <select id="expr-C" class="bg-black/50 border border-purple-500/50 rounded px-2 py-1 text-cyan-300 focus-visible" aria-label="Choisir l'expression pour Ag">
+                                                <option value="">?</option>
+                                                <option value="0-x">0 - x</option>
+                                                <option value="x">x</option>
+                                                <option value="2x">2x</option>
+                                            </select>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <label for="expr-D" class="sr-only">Expression pour Cu2+</label>
+                                            <select id="expr-D" class="bg-black/50 border border-purple-500/50 rounded px-2 py-1 text-cyan-300 focus-visible" aria-label="Choisir l'expression pour Cu2+">
+                                                <option value="">?</option>
+                                                <option value="0-x">0 - x</option>
+                                                <option value="x">x</option>
+                                                <option value="2x">2x</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="p-4 bg-amber-900/30 rounded-lg border border-amber-500/50">
+                            <p class="text-amber-400">🔢 <strong>Code = nombre de termes parmi A, B, C, D qui contiennent « 2x »</strong></p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <label for="count-2x" class="text-gray-300">Votre réponse :</label>
+                                <input type="number" id="count-2x" class="w-20 px-3 py-2 rounded text-center text-white text-xl font-bold focus-visible" min="0" max="4" aria-label="Nombre de termes contenant 2x">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="validateEnigme4()" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl font-bold text-lg hover:from-emerald-500 hover:to-cyan-500 transition-all transform hover:scale-[1.02] focus-visible">
+                        ✓ VALIDER LE TABLEAU
+                    </button>
+                    
+                    <div id="result-4" class="mt-4 hidden" role="alert" aria-live="assertive"></div>
+                </div>
+            </section>
+
+            <!-- ENIGME 5 -->
+            <section id="enigme-5" class="hidden" role="region" aria-labelledby="enigme-5-title">
+                <div class="neon-border rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-4 py-2 bg-amber-600 rounded-lg font-bold">ÉNIGME 5/5</span>
+                        <span id="enigme-5-title" class="text-amber-300">Le réactif limitant révèle le coupable</span>
+                    </div>
+                    
+                    <div class="bg-black/30 rounded-xl p-4 mb-6">
+                        <p class="text-sm text-gray-400 mb-2">📚 Notion mobilisée</p>
+                        <p class="text-cyan-400 font-semibold">Réactif limitant et conditions stœchiométriques</p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">📋 Contexte</h3>
+                        <p class="text-gray-300 mb-4">
+                            Vous avez éliminé le suspect n°2 (<span class="line-through text-gray-500">M. Électron</span>). Il reste <span class="text-pink-400">Mme Oxydine</span>, <span class="text-cyan-400">Jules Limitant</span> et <span class="text-emerald-400">Prof. Stœchio</span>.
+                        </p>
+                        <p class="text-purple-400 font-semibold">Pour identifier le coupable, vous devez déterminer le réactif limitant !</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-900/50 to-cyan-900/50 rounded-xl p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">❓ L'énigme</h3>
+                        
+                        <div class="bg-black/40 rounded-lg p-4 mb-4">
+                            <p class="text-cyan-400 font-mono text-lg text-center mb-2">2Ag⁺ + Cu → 2Ag + Cu²⁺</p>
+                            <div class="text-center text-gray-300">
+                                n(Ag⁺)ᵢ = 0,1 mol &nbsp;|&nbsp; n(Cu)ᵢ = 0,08 mol
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-purple-300 mb-2"><strong>Question 1 :</strong> Calculez x<sub>max</sub> pour Ag⁺ (condition : n(Ag⁺)<sub>f</sub> ≥ 0)</p>
+                                <div class="flex items-center gap-2">
+                                    <label for="xmax-ag" class="text-gray-400">x<sub>max</sub>(Ag⁺) =</label>
+                                    <input type="text" id="xmax-ag" class="w-24 px-2 py-1 rounded text-center text-white focus-visible" placeholder="0,XX" aria-label="x max pour Ag+">
+                                    <span class="text-gray-400">mol</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-purple-300 mb-2"><strong>Question 2 :</strong> Calculez x<sub>max</sub> pour Cu (condition : n(Cu)<sub>f</sub> ≥ 0)</p>
+                                <div class="flex items-center gap-2">
+                                    <label for="xmax-cu" class="text-gray-400">x<sub>max</sub>(Cu) =</label>
+                                    <input type="text" id="xmax-cu" class="w-24 px-2 py-1 rounded text-center text-white focus-visible" placeholder="0,XX" aria-label="x max pour Cu">
+                                    <span class="text-gray-400">mol</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-purple-300 mb-2"><strong>Question 3 :</strong> Quel est le réactif limitant ?</p>
+                                <div class="flex gap-4" role="group" aria-label="Choix du réactif limitant">
+                                    <button onclick="selectLimitant('Ag', this)" class="limitant-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">Ag⁺</button>
+                                    <button onclick="selectLimitant('Cu', this)" class="limitant-btn px-6 py-2 bg-purple-600/50 hover:bg-purple-600 rounded-lg transition-all focus-visible" aria-pressed="false">Cu</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-black/30 rounded-lg p-4">
+                                <p class="text-purple-300 mb-2"><strong>Question 4 :</strong> Calculez n(Ag)<sub>f</sub> (quantité d'argent produite)</p>
+                                <div class="flex items-center gap-2">
+                                    <label for="n-ag-final" class="text-gray-400">n(Ag)<sub>f</sub> =</label>
+                                    <input type="text" id="n-ag-final" class="w-24 px-2 py-1 rounded text-center text-white focus-visible" placeholder="0,XX" aria-label="Quantité finale de Ag">
+                                    <span class="text-gray-400">mol</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-red-900/30 rounded-lg border border-red-500/50">
+                            <p class="text-red-400 text-lg font-bold text-center">🔍 Le nom du coupable correspond au nom du réactif limitant !</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Hints -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-bold text-yellow-400 mb-3">💡 Indices disponibles (<span id="hints-remaining-5">3</span> restants)</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="showHint(5, 1)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 1
+                            </button>
+                            <button onclick="showHint(5, 2)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 2
+                            </button>
+                            <button onclick="showHint(5, 3)" class="hint-btn px-4 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/50 rounded-lg transition-all text-sm focus-visible">
+                                Indice 3
+                            </button>
+                        </div>
+                        <div id="hint-display-5" class="mt-3 p-4 bg-yellow-900/30 rounded-lg border border-yellow-500/30 hidden" role="alert">
+                            <p id="hint-text-5" class="text-yellow-300"></p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="validateEnigme5()" class="w-full py-4 bg-gradient-to-r from-red-600 to-amber-600 rounded-xl font-bold text-lg hover:from-red-500 hover:to-amber-500 transition-all transform hover:scale-[1.02] focus-visible">
+                        🎯 IDENTIFIER LE COUPABLE
+                    </button>
+                    
+                    <div id="result-5" class="mt-4 hidden" role="alert" aria-live="assertive"></div>
+                </div>
+            </section>
+
+            <!-- Victory Screen -->
+            <section id="victory-screen" class="hidden text-center py-12" role="region" aria-labelledby="victory-title">
+                <div class="float-animation mb-8">
+                    <span class="text-8xl" aria-hidden="true">🏆</span>
+                </div>
+                
+                <h2 id="victory-title" class="title-font text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400 bg-clip-text text-transparent">
+                    FÉLICITATIONS !
+                </h2>
+                
+                <div class="neon-border rounded-2xl p-6 md:p-8 max-w-3xl mx-auto mb-8">
+                    <div class="text-6xl mb-4">👨‍🎓</div>
+                    <h3 class="text-2xl font-bold text-cyan-400 mb-4">JULES LIMITANT est le coupable !</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        Jules Limitant, l'élève de Terminale, a avoué ! Il voulait ajouter l'échantillon de cuivre à sa collection personnelle de métaux.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        Il a été surpris en train de faire des tests avec des solutions d'ions argent, laissant des traces de réactions redox partout.
+                    </p>
+                    <p class="text-emerald-400 font-semibold">
+                        ✅ L'échantillon de cuivre est retrouvé dans son casier, intact. Le Professeur Réductor peut faire sa démonstration demain !
+                    </p>
+                </div>
+                
+                <div class="mb-8" id="stats-container">
+                    <p id="final-time" class="text-xl text-purple-300 mb-2"></p>
+                    <p id="hints-used" class="text-gray-400"></p>
+                    <p id="difficulty-display" class="text-gray-400"></p>
+                </div>
+                
+                <!-- Recap -->
+                <div class="max-w-2xl mx-auto mb-8">
+                    <h3 class="text-xl font-bold text-white mb-4">📚 Récapitulatif des notions travaillées</h3>
+                    <div class="grid gap-2">
+                        <div class="flex justify-between items-center bg-purple-900/30 rounded-lg px-4 py-2">
+                            <span class="text-purple-300">Énigme 1</span>
+                            <span class="text-gray-400">Oxydant, réducteur, transfert d'électrons</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-cyan-900/30 rounded-lg px-4 py-2">
+                            <span class="text-cyan-300">Énigme 2</span>
+                            <span class="text-gray-400">Demi-équations électroniques</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-emerald-900/30 rounded-lg px-4 py-2">
+                            <span class="text-emerald-300">Énigme 3</span>
+                            <span class="text-gray-400">Équation d'oxydoréduction</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-pink-900/30 rounded-lg px-4 py-2">
+                            <span class="text-pink-300">Énigme 4</span>
+                            <span class="text-gray-400">Tableau d'avancement</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-amber-900/30 rounded-lg px-4 py-2">
+                            <span class="text-amber-300">Énigme 5</span>
+                            <span class="text-gray-400">Réactif limitant</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="restartGame()" class="px-10 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full text-xl font-bold hover:from-purple-500 hover:to-cyan-500 transition-all transform hover:scale-105 focus-visible">
+                    🔄 REJOUER
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Notification system -->
+    <div id="notification" class="fixed top-4 right-4 z-50 hidden" role="alert" aria-live="polite">
+        <div class="bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl px-6 py-3 shadow-2xl">
+            <p id="notification-text" class="font-bold"></p>
+        </div>
+    </div>
+
+    <script>
+        // Game state with localStorage support
+        let gameState = {
+            currentEnigme: 0,
+            answers: {
+                1: { A: null, B: null, C: null },
+            },
+            limitantChoice: null,
+            timerInterval: null,
+            timeRemaining: 3600, // 60 minutes in seconds
+            hintsUsed: 0,
+            startTime: null,
+            solved: [false, false, false, false, false],
+            teamName: '',
+            difficulty: 'normal',
+            hintsAvailable: {
+                1: 3,
+                2: 1,
+                3: 3,
+                4: 0,
+                5: 3
+            }
+        };
+
+        // Difficulty settings
+        const difficultySettings = {
+            facile: {
+                time: 5400, // 90 minutes
+                hintsMultiplier: 1.5,
+                duration: '60-90 minutes'
+            },
+            normal: {
+                time: 3600, // 60 minutes
+                hintsMultiplier: 1,
+                duration: '45-60 minutes'
+            },
+            difficile: {
+                time: 2700, // 45 minutes
+                hintsMultiplier: 0.5,
+                duration: '30-45 minutes'
+            }
+        };
+
+        // Hints data
+        const hints = {
+            1: {
+                1: "Un oxydant CAPTE des électrons, un réducteur en CÈDE.",
+                2: "Perdre des électrons = oxydation, gagner des électrons = réduction.",
+                3: "Dans un couple redox, on écrit toujours Oxydant/Réducteur."
+            },
+            2: {
+                1: "Le nombre d'électrons captés correspond à la charge de l'ion métallique."
+            },
+            3: {
+                1: "Ag⁺ + e⁻ ⇌ Ag (réduction)",
+                2: "Cu ⇌ Cu²⁺ + 2e⁻ (oxydation)",
+                3: "Les électrons doivent s'annuler dans l'équation bilan !"
+            },
+            5: {
+                1: "Pour Ag⁺ : 0,1 - 2x ≥ 0, donc x ≤ 0,1/2 = 0,05 mol",
+                2: "Pour Cu : 0,08 - x ≥ 0, donc x ≤ 0,08 mol",
+                3: "Le réactif limitant est celui qui donne la plus petite valeur de xₘₐₓ"
+            }
+        };
+
+        // LocalStorage functions
+        function saveGame() {
+            const saveData = {
+                ...gameState,
+                version: '1.0',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('escapegame_save_' + gameState.teamName, JSON.stringify(saveData));
+            console.log('Partie sauvegardée pour', gameState.teamName);
+        }
+
+        function loadSavedGame() {
+            const teamName = document.getElementById('team-name').value.trim();
+            if (!teamName) return null;
+            
+            const saved = localStorage.getItem('escapegame_save_' + teamName);
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function checkForSavedGame() {
+            const teamNameInput = document.getElementById('team-name');
+            teamNameInput.addEventListener('input', () => {
+                const teamName = teamNameInput.value.trim();
+                if (teamName) {
+                    const saved = localStorage.getItem('escapegame_save_' + teamName);
+                    const loadSection = document.getElementById('load-game-section');
+                    if (saved) {
+                        loadSection.classList.remove('hidden');
+                    } else {
+                        loadSection.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        function loadGame() {
+            const savedGame = loadSavedGame();
+            if (savedGame) {
+                gameState = savedGame;
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('enigme-' + gameState.currentEnigme).classList.remove('hidden');
+                startTimer();
+                restoreProgress();
+                showNotification('Partie reprise avec succès !');
+            }
+        }
+
+        function restoreProgress() {
+            // Restore progress indicators
+            gameState.solved.forEach((solved, index) => {
+                if (solved) {
+                    const dot = document.querySelector(`[data-enigme="${index + 1}"]`);
+                    if (dot) {
+                        dot.classList.remove('bg-gray-600');
+                        dot.classList.add('bg-emerald-500');
+                    }
+                }
+            });
+        }
+
+        function setDifficulty(level) {
+            gameState.difficulty = level;
+            const settings = difficultySettings[level];
+            gameState.timeRemaining = settings.time;
+            
+            // Update hints based on difficulty
+            if (level === 'facile') {
+                gameState.hintsAvailable = { 1: 5, 2: 2, 3: 5, 4: 1, 5: 5 };
+            } else if (level === 'difficile') {
+                gameState.hintsAvailable = { 1: 2, 2: 1, 3: 2, 4: 0, 5: 2 };
+            }
+            
+            // Update UI
+            document.getElementById('duration-display').textContent = settings.duration;
+            
+            // Highlight selected difficulty
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-cyan-400');
+            });
+            event.target.closest('.difficulty-btn').classList.add('ring-2', 'ring-cyan-400');
+            
+            showNotification(`Difficulté "${level}" sélectionnée !`);
+        }
+
+        // Create floating molecules
+        function createMolecules() {
+            const container = document.getElementById('molecules');
+            const molecules = ['⚛️', '🧬', '⚗️', '💎', '🔬', '🧪'];
+            
+            for (let i = 0; i < 15; i++) {
+                const mol = document.createElement('div');
+                mol.className = 'molecule float-animation';
+                mol.textContent = molecules[Math.floor(Math.random() * molecules.length)];
+                mol.style.left = Math.random() * 100 + '%';
+                mol.style.top = Math.random() * 100 + '%';
+                mol.style.animationDelay = Math.random() * 3 + 's';
+                mol.style.fontSize = (Math.random() * 2 + 1) + 'rem';
+                container.appendChild(mol);
+            }
+        }
+
+        // Timer functions
+        function startTimer() {
+            gameState.startTime = Date.now();
+            gameState.timerInterval = setInterval(() => {
+                updateTimer();
+                // Auto-save every 30 seconds
+                if (gameState.timeRemaining % 30 === 0 && gameState.teamName) {
+                    saveGame();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            gameState.timeRemaining--;
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerEl.setAttribute('aria-label', `Temps restant : ${minutes} minutes et ${seconds} secondes`);
+            
+            if (gameState.timeRemaining <= 300) {
+                timerEl.classList.add('timer-critical');
+            }
+            
+            if (gameState.timeRemaining <= 0) {
+                clearInterval(gameState.timerInterval);
+                showNotification("⏱️ Temps écoulé !");
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(gameState.timerInterval);
+        }
+
+        // Notification
+        function showNotification(text) {
+            const notif = document.getElementById('notification');
+            document.getElementById('notification-text').textContent = text;
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 3000);
+        }
+
+        // Start game
+        function startGame() {
+            const teamName = document.getElementById('team-name').value.trim();
+            if (!teamName) {
+                alert('Veuillez entrer un nom d\'équipe !');
+                document.getElementById('team-name').focus();
+                return;
+            }
+            
+            if (!gameState.difficulty) {
+                alert('Veuillez choisir un niveau de difficulté !');
+                return;
+            }
+            
+            gameState.teamName = teamName;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('enigme-1').classList.remove('hidden');
+            gameState.currentEnigme = 1;
+            startTimer();
+            saveGame();
+        }
+
+        // Show hint
+        function showHint(enigme, hintNum) {
+            if (gameState.hintsAvailable[enigme] <= 0) {
+                showNotification("Plus d'indices disponibles pour cette énigme !");
+                return;
+            }
+            
+            const display = document.getElementById(`hint-display-${enigme}`);
+            const text = document.getElementById(`hint-text-${enigme}`);
+            text.textContent = hints[enigme][hintNum];
+            display.classList.remove('hidden');
+            gameState.hintsUsed++;
+            gameState.hintsAvailable[enigme]--;
+            
+            const remaining = document.getElementById(`hints-remaining-${enigme}`);
+            if (remaining) {
+                remaining.textContent = gameState.hintsAvailable[enigme];
+            }
+            
+            saveGame();
+        }
+
+        // Enigme 1 functions
+        function selectAnswer(enigme, question, answer, btn) {
+            gameState.answers[enigme][question] = answer;
+            
+            // Update UI
+            const siblings = btn.parentElement.querySelectorAll('.answer-btn');
+            siblings.forEach(b => {
+                b.classList.remove('bg-purple-600', 'ring-2', 'ring-cyan-400');
+                b.setAttribute('aria-pressed', 'false');
+            });
+            btn.classList.add('bg-purple-600', 'ring-2', 'ring-cyan-400');
+            btn.setAttribute('aria-pressed', 'true');
+            
+            // Update code display
+            const codeElement = document.getElementById(`code1-${question}`);
+            if (codeElement) {
+                codeElement.textContent = answer;
+                codeElement.classList.add('text-cyan-400');
+                codeElement.classList.add('success-pop');
+                setTimeout(() => codeElement.classList.remove('success-pop'), 500);
+            }
+            
+            saveGame();
+        }
+
+        function validateEnigme1() {
+            const answers = gameState.answers[1];
+            if (answers.A === 'O' && answers.B === 'O' && answers.C === 'C') {
+                showSuccess(1, "CODE : O-O-C → Direction : SALLE 312 !");
+                setTimeout(() => {
+                    document.getElementById('enigme-1').classList.add('hidden');
+                    document.getElementById('enigme-2').classList.remove('hidden');
+                    gameState.currentEnigme = 2;
+                    saveGame();
+                }, 2000);
+            } else {
+                showError(1, "Code incorrect ! Vérifiez vos réponses.");
+            }
+        }
+
+        // Enigme 2 functions
+        function validateEnigme2() {
+            const c1 = document.getElementById('coef1').value;
+            const c2 = document.getElementById('coef2').value;
+            const c3 = document.getElementById('coef3').value;
+            const c4 = document.getElementById('coef4').value;
+            
+            // Update lock display
+            document.getElementById('lock-1').textContent = c1 || '?';
+            document.getElementById('lock-2').textContent = c2 || '?';
+            document.getElementById('lock-3').textContent = c3 || '?';
+            document.getElementById('lock-4').textContent = c4 || '?';
+            
+            if (c1 === '1' && c2 === '2' && c3 === '1' && c4 === '3') {
+                showSuccess(2, "🔓 Le coffre s'ouvre ! Code : 1213");
+                setTimeout(() => {
+                    document.getElementById('enigme-2').classList.add('hidden');
+                    document.getElementById('enigme-3').classList.remove('hidden');
+                    gameState.currentEnigme = 3;
+                    saveGame();
+                }, 2000);
+            } else {
+                showError(2, "Le cadenas ne s'ouvre pas... Réessayez !");
+            }
+        }
+
+        // Enigme 3 functions
+        function validateEnigme3() {
+            const coef = document.getElementById('coef-ag').value;
+            
+            if (coef === '2') {
+                showSuccess(3, "Correct ! Coefficient = 2 → Direction : Salle n°2");
+                setTimeout(() => {
+                    document.getElementById('enigme-3').classList.add('hidden');
+                    document.getElementById('enigme-4').classList.remove('hidden');
+                    gameState.currentEnigme = 4;
+                    saveGame();
+                }, 2000);
+            } else {
+                showError(3, "Ce n'est pas le bon coefficient... Réessayez !");
+            }
+        }
+
+        // Enigme 4 functions
+        function validateEnigme4() {
+            const exprA = document.getElementById('expr-A').value;
+            const exprB = document.getElementById('expr-B').value;
+            const exprC = document.getElementById('expr-C').value;
+            const exprD = document.getElementById('expr-D').value;
+            const count = document.getElementById('count-2x').value;
+            
+            const correctA = exprA === '0.1-2x';
+            const correctB = exprB === '0.08-x';
+            const correctC = exprC === '2x';
+            const correctD = exprD === 'x';
+            
+            if (correctA && correctB && correctC && correctD && count === '2') {
+                showSuccess(4, "Correct ! A et C contiennent « 2x » → Code = 2 → Suspect n°2 éliminé (M. Électron) !");
+                setTimeout(() => {
+                    document.getElementById('enigme-4').classList.add('hidden');
+                    document.getElementById('enigme-5').classList.remove('hidden');
+                    gameState.currentEnigme = 5;
+                    saveGame();
+                }, 2000);
+            } else {
+                let errorMsg = "Le tableau n'est pas correct...";
+                if (!correctA) errorMsg += " Vérifiez A (expression pour Ag⁺).";
+                if (!correctB) errorMsg += " Vérifiez B (expression pour Cu).";
+                if (!correctC) errorMsg += " Vérifiez C (expression pour Ag).";
+                if (!correctD) errorMsg += " Vérifiez D (expression pour Cu²⁺).";
+                if (count !== '2') errorMsg += " Le nombre de termes avec '2x' est incorrect.";
+                showError(4, errorMsg);
+            }
+        }
+
+        // Enigme 5 functions
+        function selectLimitant(choice, btn) {
+            gameState.limitantChoice = choice;
+            const siblings = document.querySelectorAll('.limitant-btn');
+            siblings.forEach(b => {
+                b.classList.remove('bg-purple-600', 'ring-2', 'ring-cyan-400');
+                b.setAttribute('aria-pressed', 'false');
+            });
+            btn.classList.add('bg-purple-600', 'ring-2', 'ring-cyan-400');
+            btn.setAttribute('aria-pressed', 'true');
+            saveGame();
+        }
+
+        function validateEnigme5() {
+            const xmaxAg = document.getElementById('xmax-ag').value.replace(',', '.');
+            const xmaxCu = document.getElementById('xmax-cu').value.replace(',', '.');
+            const nAgFinal = document.getElementById('n-ag-final').value.replace(',', '.');
+            
+            const correctXmaxAg = parseFloat(xmaxAg) === 0.05;
+            const correctXmaxCu = parseFloat(xmaxCu) === 0.08;
+            const correctLimitant = gameState.limitantChoice === 'Ag';
+            const correctNAg = parseFloat(nAgFinal) === 0.1;
+            
+            if (correctXmaxAg && correctXmaxCu && correctLimitant && correctNAg) {
+                showSuccess(5, "🎯 Le réactif LIMITANT est Ag⁺ → Le coupable est JULES LIMITANT !");
+                stopTimer();
+                setTimeout(() => {
+                    document.getElementById('enigme-5').classList.add('hidden');
+                    showVictory();
+                    // Clear saved game on completion
+                    if (gameState.teamName) {
+                        localStorage.removeItem('escapegame_save_' + gameState.teamName);
+                    }
+                }, 2500);
+            } else {
+                let errorMsg = "Vérifiez vos calculs :";
+                if (!correctXmaxAg) errorMsg += " xmax(Ag⁺) incorrect.";
+                if (!correctXmaxCu) errorMsg += " xmax(Cu) incorrect.";
+                if (!correctLimitant) errorMsg += " Réactif limitant incorrect.";
+                if (!correctNAg) errorMsg += " n(Ag)f incorrect.";
+                showError(5, errorMsg);
+            }
+        }
+
+        // Show success/error messages
+        function showSuccess(enigme, message) {
+            const result = document.getElementById(`result-${enigme}`);
+            result.innerHTML = `<div class="success-pop p-4 bg-emerald-900/50 border border-emerald-500 rounded-xl text-emerald-400 font-semibold">✅ ${message}</div>`;
+            result.classList.remove('hidden');
+            
+            // Update progress
+            gameState.solved[enigme - 1] = true;
+            const dot = document.querySelector(`[data-enigme="${enigme}"]`);
+            if (dot) {
+                dot.classList.remove('bg-gray-600');
+                dot.classList.add('bg-emerald-500');
+                dot.setAttribute('aria-label', `Énigme ${enigme} résolue`);
+            }
+            
+            showNotification("✅ Énigme résolue !");
+            saveGame();
+        }
+
+        function showError(enigme, message) {
+            const result = document.getElementById(`result-${enigme}`);
+            result.innerHTML = `<div class="shake p-4 bg-red-900/50 border border-red-500 rounded-xl text-red-400 font-semibold">❌ ${message}</div>`;
+            result.classList.remove('hidden');
+        }
+
+        // Victory screen
+        function showVictory() {
+            document.getElementById('victory-screen').classList.remove('hidden');
+            
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('final-time').textContent = `⏱️ Temps : ${minutes} min ${seconds} sec`;
+            document.getElementById('hints-used').textContent = `💡 Indices utilisés : ${gameState.hintsUsed}`;
+            document.getElementById('difficulty-display').textContent = `🎯 Difficulté : ${gameState.difficulty.toUpperCase()}`;
+            
+            // Send results to teacher dashboard
+            sendResultsToTeacher();
+        }
+
+        // Send results to teacher (using localStorage as database)
+        function sendResultsToTeacher() {
+            const results = {
+                teamName: gameState.teamName,
+                difficulty: gameState.difficulty,
+                timeElapsed: Math.floor((Date.now() - gameState.startTime) / 1000),
+                hintsUsed: gameState.hintsUsed,
+                completedAt: new Date().toISOString(),
+                solved: gameState.solved
+            };
+            
+            // Get existing results
+            const allResults = JSON.parse(localStorage.getItem('teacher_results') || '[]');
+            allResults.push(results);
+            localStorage.setItem('teacher_results', JSON.stringify(allResults));
+        }
+
+        // Restart game
+        function restartGame() {
+            location.reload();
+        }
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-nav');
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.remove('keyboard-nav');
+        });
+
+        // Initialize
+        createMolecules();
+        checkForSavedGame();
+        
+        // Input listeners for lock display update
+        ['coef1', 'coef2', 'coef3', 'coef4'].forEach((id, index) => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', () => {
+                    document.getElementById(`lock-${index + 1}`).textContent = input.value || '?';
+                    saveGame();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
